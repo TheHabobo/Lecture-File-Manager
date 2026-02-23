@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lecture File Manager</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ======== TOP BAR ======== -->
+<header class="topbar">
+  <div class="topbar-brand">📚 Lecture File Manager</div>
+  <div class="topbar-actions">
+    <button class="btn btn-primary" id="btn-upload">⬆ Upload PDF</button>
+    <button class="btn btn-secondary" id="btn-new-group">＋ New Group</button>
+  </div>
+</header>
+
+<!-- ======== LAYOUT ======== -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Groups</div>
+      <ul id="group-list" class="group-list"></ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">
+        All Files
+        <span class="sidebar-title-filter" id="group-filter-label"></span>
+        <button class="btn-icon" id="btn-clear-filter" title="Show all files" style="display:none">✕</button>
+      </div>
+      <ul id="file-list" class="file-list"></ul>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- Tab bar -->
+    <div class="tab-bar" id="tab-bar">
+      <div class="tab-placeholder" id="tab-placeholder">
+        Select a file from the sidebar to open it here.
+      </div>
+    </div>
+
+    <!-- Tab content panels -->
+    <div class="tab-content" id="tab-content"></div>
+  </main>
+</div>
+
+<!-- ======== MODALS ======== -->
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="modal-upload" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Upload PDF</span>
+      <button class="modal-close" data-modal="modal-upload">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="drop-zone" id="drop-zone">
+        <p>Drag &amp; drop PDF files here</p>
+        <p>or</p>
+        <label class="btn btn-primary" style="cursor:pointer">
+          Browse
+          <input type="file" id="file-input" accept=".pdf" multiple style="display:none" />
+        </label>
+      </div>
+      <div style="margin-top:12px">
+        <label>Add to group (optional)
+          <select id="upload-group-select" class="form-control" style="margin-top:4px">
+            <option value="">— None —</option>
+          </select>
+        </label>
+      </div>
+      <div id="upload-status" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit Group Modal -->
+<div class="modal-overlay" id="modal-group" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-group-title">New Group</span>
+      <button class="modal-close" data-modal="modal-group">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-group-id" />
+      <label>Group name
+        <input type="text" id="group-name-input" class="form-control" placeholder="e.g. Machine Learning" style="margin-top:4px" />
+      </label>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-save-group">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal-overlay" id="modal-confirm" style="display:none">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span id="confirm-title">Confirm</span>
+      <button class="modal-close" data-modal="modal-confirm">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message"></p>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="btn-confirm-yes">Delete</button>
+        <button class="btn btn-secondary" id="btn-confirm-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
