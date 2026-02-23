@@ -347,8 +347,13 @@ function activateTab(fileId) {
 
 function closeTab(fileId) {
   if (openTabs[fileId]?.dirty) {
-    if (!window.confirm("You have unsaved changes. Close without saving?")) return;
+    confirm_("You have unsaved changes. Close without saving?", () => _doCloseTab(fileId));
+    return;
   }
+  _doCloseTab(fileId);
+}
+
+function _doCloseTab(fileId) {
   delete openTabs[fileId];
   document.getElementById(`tab-${fileId}`)?.remove();
   document.getElementById(`panel-${fileId}`)?.remove();

@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify, send_from_directory, render_template, abort
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timezone
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
@@ -25,7 +25,7 @@ class Group(db.Model):
     __tablename__ = "groups"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     files = db.relationship("PDFFile", backref="group", lazy=True)
 
     def to_dict(self):
@@ -45,7 +45,7 @@ class PDFFile(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey("groups.id"), nullable=True)
     description = db.Column(db.Text, default="")
     summary = db.Column(db.Text, default="")
-    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    uploaded_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {
@@ -114,7 +114,7 @@ def upload_file():
     original_name = secure_filename(file.filename)
     # Make stored name unique using timestamp
     base, ext = os.path.splitext(original_name)
-    stored_name = f"{base}_{int(datetime.utcnow().timestamp() * 1000)}{ext}"
+    stored_name = f"{base}_{int(datetime.now(timezone.utc).timestamp() * 1000)}{ext}"
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], stored_name)
     file.save(file_path)
 
@@ -241,4 +241,5 @@ def delete_group(group_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug, port=5000)
