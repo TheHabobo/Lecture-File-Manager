@@ -1,0 +1,16 @@
+{
+  "name": "fms-devcontainer",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "fms",
+  "workspaceFolder": "/app",
+  "overrideCommand": true,
+  "postCreateCommand": "pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}

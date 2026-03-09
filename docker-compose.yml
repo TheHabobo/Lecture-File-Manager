@@ -1,0 +1,15 @@
+services:
+  fms:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fms-app
+    ports:
+      - "5001:5000"
+    environment:
+      FLASK_DEBUG: "1"
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python app.py
