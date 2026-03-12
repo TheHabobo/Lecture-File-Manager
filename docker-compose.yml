@@ -10,6 +10,11 @@ services:
       FLASK_DEBUG: "1"
       PYTHONUNBUFFERED: "1"
     volumes:
-      - .:/app
+      - ./app.py:/app/app.py
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./requirements.txt:/app/requirements.txt
+      - ./uploads:/app/uploads
+      - ./fms.db:/app/fms.db
     working_dir: /app
     command: python app.py
