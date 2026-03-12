@@ -2,7 +2,7 @@ import os
 import re
 import secrets
 from collections import Counter
-from flask import Flask, request, jsonify, send_from_directory, render_template, abort
+from flask import Flask, request, jsonify, send_from_directory, render_template, abort, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from werkzeug.utils import secure_filename
@@ -343,6 +343,11 @@ def _generate_task_text(pdf_file: PDFFile, example_tasks: str, current_descripti
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return redirect("/static/favicon.svg", code=302)
 
 
 @app.route("/shared/<share_token>")
