@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ group.name }} – Shared Group</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: #1c1c1e;
+      background: #f2f2f7;
+      min-height: 100vh;
+    }
+    .shared-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 52px;
+      background: #fff;
+      border-bottom: 1px solid #e5e5ea;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .shared-topbar-brand {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1c1c1e;
+      letter-spacing: -.2px;
+    }
+    .shared-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: #007AFF;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .shared-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+    .shared-group-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .shared-group-meta {
+      font-size: 13px;
+      color: #8e8e93;
+      margin-bottom: 32px;
+    }
+    .shared-section {
+      margin-bottom: 36px;
+    }
+    .shared-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1c1c1e;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e5e5ea;
+    }
+
+    /* File card */
+    .shared-file-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e5ea;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: box-shadow .15s;
+    }
+    .shared-file-card:hover {
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .shared-file-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .shared-file-header:hover {
+      background: #fafafa;
+    }
+    .shared-file-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .shared-file-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1c1c1e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pdf-icon {
+      font-size: 11px;
+      background: #ff3b30;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      flex-shrink: 0;
+    }
+    .shared-file-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .shared-file-date {
+      font-size: 12px;
+      color: #8e8e93;
+    }
+    .shared-expand-icon {
+      font-size: 12px;
+      color: #8e8e93;
+      transition: transform .2s;
+    }
+    .shared-file-card.open .shared-expand-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Expandable body */
+    .shared-file-body {
+      display: none;
+      border-top: 1px solid #e5e5ea;
+    }
+    .shared-file-card.open .shared-file-body {
+      display: block;
+    }
+    .shared-file-actions {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    .shared-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 8px;
+      border: 1px solid #e5e5ea;
+      background: #fff;
+      color: #007AFF;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .shared-btn:hover {
+      background: #f0f5ff;
+    }
+    .shared-btn-primary {
+      background: #007AFF;
+      color: #fff;
+      border-color: #007AFF;
+    }
+    .shared-btn-primary:hover {
+      background: #0066dd;
+    }
+
+    /* PDF viewer */
+    .shared-pdf-viewer {
+      display: none;
+      width: 100%;
+      height: 75vh;
+      border: none;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    .shared-pdf-viewer.visible {
+      display: block;
+    }
+
+    /* Detail fields */
+    .shared-file-details {
+      padding: 16px 20px 20px;
+    }
+    .shared-file-field {
+      margin-bottom: 16px;
+    }
+    .shared-file-field:last-child {
+      margin-bottom: 0;
+    }
+    .shared-field-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #8e8e93;
+      margin-bottom: 6px;
+    }
+    .shared-field-content {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #3a3a3c;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f9f9fb;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #f0f0f5;
+    }
+    .shared-no-content {
+      font-size: 13px;
+      color: #c7c7cc;
+      font-style: italic;
+    }
+
+    /* Subgroup */
+    .shared-subgroup-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .shared-subgroup-icon { font-size: 20px; }
+    .shared-subgroup-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1c1c1e;
+    }
+    .shared-subgroup-count {
+      font-size: 12px;
+      color: #8e8e93;
+      background: #f2f2f7;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .shared-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: #8e8e93;
+    }
+    .shared-empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="shared-topbar">
+  <span class="shared-topbar-brand">📚 Lecture File Manager</span>
+  <span class="shared-badge">Shared</span>
+</div>
+
+<div class="shared-container">
+  <h1 class="shared-group-title">{{ group.name }}</h1>
+  <p class="shared-group-meta">
+    {{ group.files | length }} file{{ 's' if group.files | length != 1 else '' }}
+    · {{ group.subgroups | length }} group{{ 's' if group.subgroups | length != 1 else '' }}
+  </p>
+
+  {# ---- Macro for a single file card ---- #}
+  {% macro file_card(f) %}
+  <div class="shared-file-card" id="card-{{ f.id }}">
+    <div class="shared-file-header" data-toggle-card="{{ f.id }}">
+      <div class="shared-file-left">
+        <span class="pdf-icon">PDF</span>
+        <span class="shared-file-name">{{ f.original_name }}</span>
+      </div>
+      <div class="shared-file-right">
+        <span class="shared-file-date">{{ f.uploaded_at.strftime('%b %d, %Y') }}</span>
+        <span class="shared-expand-icon">▼</span>
+      </div>
+    </div>
+    <div class="shared-file-body">
+      <div class="shared-file-actions">
+        <button class="shared-btn shared-btn-primary" data-view-pdf="{{ f.id }}">📄 View PDF</button>
+        <a class="shared-btn" href="/api/files/{{ f.id }}/pdf" target="_blank" rel="noopener">↗ Open in New Tab</a>
+      </div>
+      <iframe class="shared-pdf-viewer" id="pdf-{{ f.id }}"></iframe>
+      <div class="shared-file-details">
+        <div class="shared-file-field">
+          <div class="shared-field-label">Description</div>
+          {% if f.description %}
+          <div class="shared-field-content">{{ f.description }}</div>
+          {% else %}
+          <div class="shared-no-content">No description added.</div>
+          {% endif %}
+        </div>
+        <div class="shared-file-field">
+          <div class="shared-field-label">Summary</div>
+          {% if f.summary %}
+          <div class="shared-field-content">{{ f.summary }}</div>
+          {% else %}
+          <div class="shared-no-content">No summary added.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endmacro %}
+
+  {% if root_files %}
+  <div class="shared-section">
+    <div class="shared-section-title">Files</div>
+    {% for f in root_files %}
+      {{ file_card(f) }}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% for sg_data in subgroup_data %}
+  <div class="shared-section">
+    <div class="shared-subgroup-header">
+      <span class="shared-subgroup-icon">📂</span>
+      <span class="shared-subgroup-name">{{ sg_data.subgroup.name }}</span>
+      <span class="shared-subgroup-count">{{ sg_data.files | length }} file{{ 's' if sg_data.files | length != 1 else '' }}</span>
+    </div>
+    {% for f in sg_data.files %}
+      {{ file_card(f) }}
+    {% endfor %}
+    {% if sg_data.files | length == 0 %}
+    <div class="shared-file-card" style="text-align:center; color:#8e8e93; padding:24px;">
+      No files in this group.
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if not root_files and not subgroup_data %}
+  <div class="shared-empty">
+    <div class="shared-empty-icon">📄</div>
+    <p>This group has no files yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function toggleCard(fileId) {
+  const card = document.getElementById('card-' + fileId);
+  if (!card) return;
+  card.classList.toggle('open');
+}
+
+function viewPdf(fileId) {
+  const iframe = document.getElementById('pdf-' + fileId);
+  if (!iframe) return;
+  if (iframe.classList.contains('visible')) {
+    iframe.classList.remove('visible');
+    iframe.src = '';
+  } else {
+    iframe.src = '/api/files/' + fileId + '/pdf#toolbar=1';
+    iframe.classList.add('visible');
+  }
+}
+
+document.addEventListener('click', (event) => {
+  const toggleEl = event.target.closest('[data-toggle-card]');
+  if (toggleEl) {
+    const fileId = parseInt(toggleEl.dataset.toggleCard, 10);
+    if (!Number.isNaN(fileId)) {
+      toggleCard(fileId);
+    }
+    return;
+  }
+
+  const viewPdfEl = event.target.closest('[data-view-pdf]');
+  if (viewPdfEl) {
+    const fileId = parseInt(viewPdfEl.dataset.viewPdf, 10);
+    if (!Number.isNaN(fileId)) {
+      viewPdf(fileId);
+    }
+  }
+});
+</script>
+
+</body>
+</html>
