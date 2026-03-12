@@ -14,15 +14,16 @@ venv/
 .venv/
 env/
 
-# Database & uploads (runtime data)
+# Runtime data (database & uploads are not committed — they live on the host)
 fms.db
+*.db
 uploads/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE / editors
 .idea/
 .vscode/
 *.swp
