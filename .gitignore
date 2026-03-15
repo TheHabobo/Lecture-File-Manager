@@ -1,0 +1,27 @@
+# Project .gitignore
+# Prevent local environment files and sensitive keys from being committed.
+# Add any other local files you don't want in source control here.
+
+# Environment variables
+.env
+.env.local
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environment directories
+.venv/
+venv/
+
+# Local runtime data
+uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor/OS files
+*.swp
+.DS_Store

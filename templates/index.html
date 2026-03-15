@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lecture File Manager</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=3" />
+  <link rel="shortcut icon" href="/favicon.ico?v=3" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ======== TOP BAR ======== -->
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="btn-back" id="btn-back" style="display:none">
+      <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="btn-back-label">Library</span>
+    </button>
+    <span class="topbar-brand" id="topbar-brand">📚 Lecture File Manager</span>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-secondary btn-sm" id="btn-new-group">＋ New Group</button>
+    <button class="btn btn-secondary btn-sm" id="btn-new-subgroup" style="display:none">＋ New Group</button>
+    <button class="btn btn-primary btn-sm" id="btn-upload">⬆ Upload PDF</button>
+  </div>
+</header>
+
+<!-- ======== VIEWS ======== -->
+<main class="app-main">
+
+  <!-- VIEW: LIBRARY (groups grid) -->
+  <section class="view active" id="view-library">
+    <div class="view-header">
+      <h1 class="view-title">My Library</h1>
+      <div class="library-switch" id="library-switch">
+        <button class="library-switch-btn active" id="btn-library-groups" onclick="setLibraryMode('groups')">Groups</button>
+        <button class="library-switch-btn" id="btn-library-board" onclick="setLibraryMode('board')">Topics + To-Dos</button>
+        <button class="library-switch-btn" id="btn-library-timeline" onclick="setLibraryMode('timeline')">Timeline</button>
+      </div>
+    </div>
+    <div class="card-grid" id="group-grid"></div>
+    <div id="library-board-root" style="display:none"></div>
+    <div id="library-timeline-root" style="display:none"></div>
+  </section>
+
+  <!-- VIEW: GROUP (files grid) -->
+  <section class="view" id="view-group">
+    <div class="view-header">
+      <h1 class="view-title" id="group-view-title">Group</h1>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn btn-secondary btn-sm" id="btn-add-unassigned" style="display:none">＋ Add Unassigned Files</button>
+      <button class="btn btn-secondary btn-sm" id="btn-share-group" style="display:none">🔗 Share</button>
+    </div>
+    </div>
+    <div class="card-grid" id="file-grid"></div>
+  </section>
+
+  <!-- VIEW: FILE (detail) -->
+  <section class="view" id="view-file">
+    <div class="file-view-wrapper" id="file-view-wrapper">
+      <!-- Left side: PDF viewer -->
+      <div class="file-panel file-panel-left" id="file-panel-left">
+        <div id="file-detail-pdf"></div>
+      </div>
+      
+      <!-- Resizable divider -->
+      <div class="file-divider" id="file-divider"></div>
+      
+      <!-- Right side: Details sidebar -->
+      <div class="file-panel file-panel-right" id="file-panel-right">
+        <div id="file-detail-info"></div>
+      </div>
+    </div>
+    
+    <!-- Full-width centered view (toggled) -->
+    <div class="file-view-centered" id="file-view-centered" style="display:none">
+      <div id="file-detail"></div>
+    </div>
+  </section>
+
+  <!-- VIEW: TOPICS -->
+  <section class="view" id="view-topics">
+    <div class="topics-page">
+      <div class="topics-page-header">
+        <div>
+          <h1 class="view-title" id="topics-view-title">Topics</h1>
+          <p class="topics-page-sub">Topics covered across all files in this group</p>
+        </div>
+        <div class="topics-page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="resetTopicChecks()">↺ Reset Progress</button>
+          <button class="btn btn-primary btn-sm" id="btn-generate-topics" onclick="generateGroupTopics()">✦ Generate Topics</button>
+        </div>
+      </div>
+      <div id="topics-checklist-body"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ======== MODALS ======== -->
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="modal-upload" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Upload PDF</span>
+      <button class="modal-close" data-modal="modal-upload">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="drop-zone" id="drop-zone">
+        <p>Drag &amp; drop PDF files here</p>
+        <p>or</p>
+        <label class="btn btn-primary" style="cursor:pointer">
+          Browse
+          <input type="file" id="file-input" accept=".pdf" multiple style="display:none" />
+        </label>
+      </div>
+      <div style="margin-top:12px">
+        <label>Add to group (optional)
+          <select id="upload-group-select" class="form-control" style="margin-top:4px">
+            <option value="">— None —</option>
+          </select>
+        </label>
+      </div>
+      <div id="upload-status" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit Group Modal -->
+<div class="modal-overlay" id="modal-group" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-group-title">New Group</span>
+      <button class="modal-close" data-modal="modal-group">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="group-form-mode" value="group" />
+      <input type="hidden" id="edit-group-id" />
+      <input type="hidden" id="edit-subgroup-id" />
+      <label>Group name
+        <input type="text" id="group-name-input" class="form-control" placeholder="e.g. Machine Learning" style="margin-top:4px" />
+      </label>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-save-group">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal-overlay" id="modal-confirm" style="display:none">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span id="confirm-title">Confirm</span>
+      <button class="modal-close" data-modal="modal-confirm">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message"></p>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="btn-confirm-yes">Delete</button>
+        <button class="btn btn-secondary" id="btn-confirm-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Assign File Modal -->
+<div class="modal-overlay" id="modal-assign" style="display:none">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span>Assign to Group</span>
+      <button class="modal-close" data-modal="modal-assign">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;margin-bottom:12px">Move <strong id="assign-file-name"></strong> to:</p>
+      <input type="hidden" id="assign-file-id" />
+      <select id="assign-group-select" class="form-control" style="margin-bottom:12px">
+      </select>
+      <select id="assign-subgroup-select" class="form-control" style="margin-bottom:12px;display:none">
+      </select>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-assign-file">Assign</button>
+        <button class="btn btn-secondary" onclick="hideModal('modal-assign')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Unassigned Files Modal -->
+<div class="modal-overlay" id="modal-unassigned" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Add Unassigned Files</span>
+      <button class="modal-close" data-modal="modal-unassigned">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;margin-bottom:12px">Select uncategorized files to add to this group.</p>
+      <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:13px; color:#4a4a4a;">
+        <input type="checkbox" id="unassigned-select-all" />
+        Select all
+      </label>
+      <div id="unassigned-file-list" class="unassigned-list"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-assign-unassigned">Add Selected</button>
+        <button class="btn btn-secondary" onclick="hideModal('modal-unassigned')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Share Group Modal -->
+<div class="modal-overlay" id="modal-share" style="display:none">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span id="share-modal-title">Share Group</span>
+      <button class="modal-close" data-modal="modal-share">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="share-modal-description" style="font-size:14px;margin-bottom:12px">Anyone with this link can view the files, descriptions, and summaries in this group.</p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="share-link-input" class="form-control" readonly style="flex:1;font-size:13px" />
+        <button class="btn btn-primary btn-sm" id="btn-copy-share">Copy</button>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-danger btn-sm" id="btn-revoke-share">Revoke Link</button>
+        <button class="btn btn-secondary btn-sm" onclick="hideModal('modal-share')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
